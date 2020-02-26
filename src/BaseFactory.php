@@ -25,9 +25,9 @@ abstract class BaseFactory implements FactoryInterface
         return new static;
     }
 
-    public function create(array $extra = [])
+    protected function build(array $extra = [], string $creationType = 'create')
     {
-        $model = $this->modelClass::create(array_merge($this->getData(FakerFactory::create()), $extra));
+        $model = $this->modelClass::$creationType(array_merge($this->getData(FakerFactory::create()), $extra));
 
         if ($this->relatedModel) {
             $model->{$this->relatedModelRelationshipName}()
@@ -35,22 +35,24 @@ abstract class BaseFactory implements FactoryInterface
         }
 
         return $model;
-
     }
 
-    public function times(int $times, array $extra = []): Collection
+    public function times(int $times): CollectionFactory
     {
-        return collect()
+        $collectionData = collect()
             ->times($times)
-            ->transform(function() use ($extra) {
-                return $this->create($extra);
-           });
+            ->map(function ($key) {
+                return $this->getData(FakerFactory::create());
+            });
+
+        return new CollectionFactory($this->modelClass, $times, $collectionData);
     }
 
     public function with(string $relatedModelClass, string $relationshipName, int $times = 1)
     {
-        $this->relatedModel =$this->getFactoryFromClassName($relatedModelClass)
-                ->times($times);
+        $this->relatedModel = $this->getFactoryFromClassName($relatedModelClass)
+            ->times($times)
+            ->make();
         $this->relatedModelRelationshipName = $relationshipName;
 
         return $this;
