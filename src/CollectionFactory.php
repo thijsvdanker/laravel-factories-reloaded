@@ -7,11 +7,20 @@ use Illuminate\Support\Collection;
 class CollectionFactory
 {
 
-    private string $modelClass;
+    /**
+     * @var string
+     */
+    private $modelClass;
 
-    private int $times;
+    /**
+     * @var int
+     */
+    private $times;
 
-    private Collection $modelsDefaultData;
+    /**
+     * @var Collection
+     */
+    private $modelsDefaultData;
 
     public function __construct(string $modelClass, int $times, Collection $modelData)
     {
@@ -34,6 +43,8 @@ class CollectionFactory
     {
         return collect()
             ->times($this->times)
-            ->transform(fn($value, $key) => $this->modelClass::$creationType(array_merge($this->modelsDefaultData[$key], $extra)));
+            ->transform(function($value, $key) use ($extra, $creationType) {
+                $this->modelClass::$creationType(array_merge($this->modelsDefaultData[$key], $extra));
+            });
     }
 }
