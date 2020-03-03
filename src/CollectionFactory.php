@@ -44,7 +44,7 @@ class CollectionFactory
         return collect()
             ->times($this->times)
             ->transform(function($value, $key) use ($extra, $creationType) {
-                $this->modelClass::$creationType(array_merge($this->modelsDefaultData[$key], $extra));
+                return $this->modelClass::$creationType(array_merge($this->modelsDefaultData[$key], $extra));
             });
     }
 }
