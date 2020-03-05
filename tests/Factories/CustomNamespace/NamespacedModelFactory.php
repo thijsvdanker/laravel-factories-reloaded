@@ -9,7 +9,10 @@ use Faker\Generator;
 class NamespacedModelFactory extends BaseFactory
 {
 
-    protected string $modelClass = NamespacedModel::class;
+    /**
+     * @var string
+     */
+    protected $modelClass = NamespacedModel::class;
 
     public function create(array $extra = []): NamespacedModel
     {
