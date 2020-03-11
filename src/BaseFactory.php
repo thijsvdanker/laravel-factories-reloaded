@@ -3,6 +3,7 @@
 namespace Christophrumpel\LaravelFactoriesReloaded;
 
 use Faker\Factory as FakerFactory;
+use Faker\Generator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -21,14 +22,25 @@ abstract class BaseFactory implements FactoryInterface
      */
     private $relatedModelRelationshipName;
 
+    /**
+     * @var Generator
+     */
+    private $faker;
+
+    public function __construct(Generator $faker)
+    {
+        $this->faker = $faker;
+    }
+
     public static function new(): self
     {
-        return new static;
+        $faker = FakerFactory::create(config('app.faker_locale', 'en_US'));
+        return new static($faker);
     }
 
     protected function build(array $extra = [], string $creationType = 'create')
     {
-        $model = $this->modelClass::$creationType(array_merge($this->getData(FakerFactory::create()), $extra));
+        $model = $this->modelClass::$creationType(array_merge($this->getData($this->faker), $extra));
 
         if ($this->relatedModel) {
             $model->{$this->relatedModelRelationshipName}()
@@ -43,7 +55,7 @@ abstract class BaseFactory implements FactoryInterface
         $collectionData = collect()
             ->times($times)
             ->map(function ($key) {
-                return $this->getData(FakerFactory::create());
+                return $this->getData($this->faker);
             });
 
         return new CollectionFactory($this->modelClass, $times, $collectionData);
@@ -66,6 +78,6 @@ abstract class BaseFactory implements FactoryInterface
         $namespacedClassName = Str::after($className, config('factories-reloaded.models_namespace'));
         $factoryClass = config('factories-reloaded.factories_namespace').$namespacedClassName.'Factory';
 
-        return new $factoryClass;
+        return new $factoryClass($this->faker);
     }
 }
